@@ -11,7 +11,7 @@ import { TenderCard } from '../components/TenderCard'
 import { ErrorDisplay } from '../components/ErrorDisplay'
 import { Button } from '../components/ui/Button'
 import { Badge } from '../components/ui/Badge'
-import { callGeminiApi } from '../lib/api'
+import { callGeminiApi, getApiStatus } from '../lib/api'
 
 export default function SmartTenderDashboard() {
   const [profile, setProfile] = useState({
