@@ -1,228 +1,18 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Loader2, Search, FileText, CheckCircle2, XCircle, AlertCircle, ExternalLink, Download, Sparkles } from 'lucide-react'
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import { LayoutDashboard, Search, Sparkles, Download, Activity, Bell, Loader2, TrendingUp, Shield, Zap, Target } from 'lucide-react'
 import jsPDF from 'jspdf'
 import 'jspdf-autotable'
 
-// API Key handling
-const API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY || ''
+import { ProfileCard } from '../components/ProfileCard'
+import { TenderAnalyzer } from '../components/TenderAnalyzer'
+import { TenderCard } from '../components/TenderCard'
+import { ErrorDisplay } from '../components/ErrorDisplay'
+import { Button } from '../components/ui/Button'
+import { Badge } from '../components/ui/Badge'
+import { callGeminiApi } from '../lib/api'
 
-// ProfileCard Component
-function ProfileCard({ profile, setProfile }) {
-  const handleChange = (field, value) => {
-    setProfile(prev => ({ ...prev, [field]: value }))
-  }
-
-  const handleSave = () => {
-    // Save to localStorage for persistence
-    localStorage.setItem('tenderProfile', JSON.stringify(profile))
-    alert('Profile saved successfully!')
-  }
-
-  return (
-    <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-      <div className="flex items-center gap-2 mb-4">
-        <FileText className="w-5 h-5 text-blue-600" />
-        <h2 className="text-xl font-semibold text-gray-800">Company Profile</h2>
-      </div>
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Keywords
-          </label>
-          <input
-            type="text"
-            value={profile.keywords || ''}
-            onChange={(e) => handleChange('keywords', e.target.value)}
-            placeholder="e.g., IT services, construction, healthcare"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Annual Turnover
-          </label>
-          <input
-            type="text"
-            value={profile.annualTurnover || ''}
-            onChange={(e) => handleChange('annualTurnover', e.target.value)}
-            placeholder="e.g., $1M - $5M"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Years of Experience
-          </label>
-          <input
-            type="number"
-            value={profile.yearsOfExperience || ''}
-            onChange={(e) => handleChange('yearsOfExperience', e.target.value)}
-            placeholder="e.g., 10"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Certifications
-          </label>
-          <textarea
-            value={profile.certifications || ''}
-            onChange={(e) => handleChange('certifications', e.target.value)}
-            placeholder="e.g., ISO 9001, CMMI Level 3"
-            rows="3"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-        <button
-          onClick={handleSave}
-          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors font-medium"
-        >
-          Save Profile
-        </button>
-      </div>
-    </div>
-  )
-}
-
-// TenderAnalyzer Component
-function TenderAnalyzer({ tenderText, setTenderText, analysisResult, isAnalyzing, analysisError, onAnalyze }) {
-  return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <div className="flex items-center gap-2 mb-4">
-        <CheckCircle2 className="w-5 h-5 text-green-600" />
-        <h2 className="text-xl font-semibold text-gray-800">Tender Analyzer</h2>
-      </div>
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Paste Tender Text
-          </label>
-          <textarea
-            value={tenderText}
-            onChange={(e) => setTenderText(e.target.value)}
-            placeholder="Paste tender details here for eligibility analysis..."
-            rows="8"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-          />
-        </div>
-        <button
-          onClick={onAnalyze}
-          disabled={isAnalyzing || !tenderText.trim()}
-          className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition-colors font-medium disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-        >
-          {isAnalyzing ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Analyzing...
-            </>
-          ) : (
-            'Analyze Eligibility'
-          )}
-        </button>
-        {analysisError && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
-            <div className="flex items-center gap-2">
-              <XCircle className="w-4 h-4" />
-              <span className="text-sm">{analysisError}</span>
-            </div>
-          </div>
-        )}
-        {analysisResult && (
-          <div className="mt-4 border border-gray-200 rounded-md p-4 bg-gray-50">
-            <h3 className="text-lg font-semibold text-gray-800 mb-3">Analysis Results</h3>
-            <div 
-              className="prose prose-sm max-w-none text-gray-700"
-              dangerouslySetInnerHTML={{ __html: analysisResult }}
-            />
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
-
-// TenderCard Component
-function TenderCard({ tender, onSelectTender }) {
-  const getEligibilityBadge = () => {
-    if (tender.isEligible === true) {
-      return (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-          <CheckCircle2 className="w-3 h-3 mr-1" />
-          Eligible
-        </span>
-      )
-    } else if (tender.isEligible === false) {
-      return (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-          <XCircle className="w-3 h-3 mr-1" />
-          Not Eligible
-        </span>
-      )
-    } else if (tender.isCheckingEligibility) {
-      return (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-          <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-          Checking...
-        </span>
-      )
-    }
-    return null
-  }
-
-  return (
-    <div
-      onClick={() => onSelectTender(tender)}
-      className="bg-white rounded-lg shadow-md p-5 hover:shadow-lg transition-shadow cursor-pointer border border-gray-200 hover:border-blue-300"
-    >
-      <div className="flex items-start justify-between mb-2">
-        <div className="flex-1">
-          <div className="flex items-start gap-2">
-            <h3 className="text-lg font-semibold text-gray-800 flex-1">{tender.title}</h3>
-            {getEligibilityBadge()}
-          </div>
-        </div>
-        {tender.url && (
-          <a
-            href={tender.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
-            className="text-blue-600 hover:text-blue-800 ml-2"
-          >
-            <ExternalLink className="w-4 h-4" />
-          </a>
-        )}
-      </div>
-      {tender.authority && (
-        <p className="text-sm text-gray-600 mb-2">
-          <span className="font-medium">Authority:</span> {tender.authority}
-        </p>
-      )}
-      {tender.summary && (
-        <p className="text-sm text-gray-700 mt-3 line-clamp-3">{tender.summary}</p>
-      )}
-    </div>
-  )
-}
-
-// ErrorDisplay Component
-function ErrorDisplay({ error }) {
-  if (!error) return null
-  
-  return (
-    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
-      <div className="flex items-center gap-2">
-        <AlertCircle className="w-4 h-4" />
-        <span className="text-sm">{error}</span>
-      </div>
-    </div>
-  )
-}
-
-// Main App Component
 export default function SmartTenderDashboard() {
   const [profile, setProfile] = useState({
     keywords: '',
@@ -240,7 +30,7 @@ export default function SmartTenderDashboard() {
   const [analysisError, setAnalysisError] = useState('')
   const [isCheckingEligibility, setIsCheckingEligibility] = useState(false)
 
-  // Load profile from localStorage on mount
+  // Load profile
   useEffect(() => {
     const savedProfile = localStorage.getItem('tenderProfile')
     if (savedProfile) {
@@ -252,74 +42,7 @@ export default function SmartTenderDashboard() {
     }
   }, [])
 
-  // API Helper Function with Exponential Backoff
-  async function callGeminiApi(options, retries = 3, delay = 1000) {
-    for (let attempt = 0; attempt < retries; attempt++) {
-      try {
-        const genAI = new GoogleGenerativeAI(API_KEY)
-        const modelName = options.model || 'gemini-2.5-flash-preview-09-2025'
-        const modelConfig = {
-          model: modelName
-        }
-        
-        // Add tools if provided (tools go in model config)
-        if (options.tools) {
-          modelConfig.tools = options.tools
-        }
-        
-        const model = genAI.getGenerativeModel(modelConfig)
-        
-        // Get the prompt/contents
-        let content
-        if (options.prompt) {
-          content = options.prompt
-        } else if (options.contents) {
-          content = options.contents
-        } else {
-          throw new Error('No prompt or contents provided')
-        }
-        
-        // Prepare generateContent call - try with generationConfig in options if provided
-        let result
-        if (options.generationConfig) {
-          // Some SDK versions support generationConfig as second parameter
-          try {
-            result = await model.generateContent(content, { generationConfig: options.generationConfig })
-          } catch (e) {
-            // Fallback: try with generationConfig in model config
-            const modelWithConfig = genAI.getGenerativeModel({
-              ...modelConfig,
-              generationConfig: options.generationConfig
-            })
-            result = await modelWithConfig.generateContent(content)
-          }
-        } else {
-          result = await model.generateContent(content)
-        }
-        
-        const response = await result.response
-        return response.text()
-      } catch (error) {
-        const isLastAttempt = attempt === retries - 1
-        const isThrottleError = error.status === 429 || error.message?.includes('429') || error.code === 429
-        
-        if (isLastAttempt) {
-          throw new Error(error.message || 'API request failed')
-        }
-        
-        if (isThrottleError) {
-          // Exponential backoff for throttling
-          const backoffDelay = delay * Math.pow(2, attempt)
-          await new Promise(resolve => setTimeout(resolve, backoffDelay))
-        } else {
-          // Shorter delay for other errors
-          await new Promise(resolve => setTimeout(resolve, delay))
-        }
-      }
-    }
-  }
-
-  // Handle Tender Search
+  // Search Logic - Optimized for Indian tenders
   async function handleSearchTenders() {
     if (!searchQuery.trim()) {
       setSearchError('Please enter a search query')
@@ -331,25 +54,31 @@ export default function SmartTenderDashboard() {
     setTenderFeed([])
 
     try {
-      const prompt = `Act as a tender research assistant. Search for current, active tenders related to: "${searchQuery}". 
+      const prompt = `Act as an expert Indian tender research assistant. Search for current, active government and private tenders in India related to: "${searchQuery}". 
       
+Focus on:
+- Government e-Procurement portals (GeM, CPPP, state portals)
+- PSU and Central/State Government tenders
+- Current and upcoming bid submissions
+
 Return a JSON object with the following structure:
 {
   "tenders": [
     {
       "title": "Tender title",
-      "authority": "Issuing authority name",
+      "authority": "Issuing authority/department name",
       "url": "Direct link to tender document or details page",
-      "summary": "Brief summary of the tender"
+      "summary": "Brief summary including estimated value if available (in ₹ Crores/Lakhs)"
     }
   ]
 }
 
 IMPORTANT: 
 - Return only valid JSON, no markdown formatting
-- The "url" must be a direct link to the tender document or details page, NOT a search results page
-- Include as many relevant tenders as possible
-- Focus on current and active tenders only`
+- Focus on Indian government and PSU tenders
+- Include estimated tender value in INR where available
+- The "url" must be a direct link to the tender, NOT a search page
+- Include 5-8 relevant active tenders`
 
       const payload = {
         prompt: prompt,
@@ -380,16 +109,8 @@ IMPORTANT:
       }
 
       const responseText = await callGeminiApi(payload)
-      
-      // Parse JSON response
-      let jsonData
-      try {
-        // Remove markdown code blocks if present
-        const cleanText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
-        jsonData = JSON.parse(cleanText)
-      } catch (parseError) {
-        throw new Error('Failed to parse API response as JSON')
-      }
+      const cleanText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
+      const jsonData = JSON.parse(cleanText)
 
       if (jsonData.tenders && Array.isArray(jsonData.tenders)) {
         setTenderFeed(jsonData.tenders)
@@ -404,7 +125,7 @@ IMPORTANT:
     }
   }
 
-  // Handle Tender Analysis
+  // Analyze Logic
   async function handleAnalyzeText() {
     if (!tenderText.trim()) {
       setAnalysisError('Please enter tender text to analyze')
@@ -418,13 +139,13 @@ IMPORTANT:
     try {
       const profileText = `
 Company Profile:
-- Keywords: ${profile.keywords || 'Not specified'}
-- Annual Turnover: ${profile.annualTurnover || 'Not specified'}
-- Years of Experience: ${profile.yearsOfExperience || 'Not specified'}
-- Certifications: ${profile.certifications || 'Not specified'}
+- Industry Keywords: ${profile.keywords || 'Not specified'}
+- Annual Turnover: ₹${profile.annualTurnover || 'Not specified'}
+- Years of Experience: ${profile.yearsOfExperience || 'Not specified'} years
+- Certifications/Registrations: ${profile.certifications || 'Not specified'}
 `
 
-      const prompt = `You are an expert tender analyst. Analyze the following tender document and company profile to provide a comprehensive eligibility assessment.
+      const prompt = `You are an expert Indian tender analyst. Analyze the following tender document and company profile to provide a comprehensive eligibility assessment.
 
 ${profileText}
 
@@ -433,22 +154,24 @@ ${tenderText}
 
 Provide a detailed analysis in Markdown format with the following sections:
 
-## Eligibility Check
-[Yes/No/Uncertain] - Provide a clear answer with brief justification.
+### Eligibility Status
+[✅ Eligible / ⚠️ Partially Eligible / ❌ Not Eligible] - [Brief Reason]
 
-## Key Requirements
-List the key requirements extracted from the tender text.
+### Key Financial Requirements
+- Minimum Turnover requirement (in ₹ Crores/Lakhs)
+- EMD/Bid Security amount
+- Performance Bank Guarantee if any
 
-## Scope Summary
-Provide 3 bullet points summarizing the scope of work:
-- [First point]
-- [Second point]
-- [Third point]
+### Technical Requirements
+List the key technical/qualification requirements.
 
-## Red Flags
-Identify any unusual clauses, strict requirements, or potential concerns that should be noted.
+### Required Documents
+List essential documents needed (GST, PAN, MSME, etc.)
 
-Format your response in clear Markdown with proper headings and formatting.`
+### Red Flags & Recommendations
+Identify any strict clauses or potential concerns.
+
+Format your response in clear Markdown.`
 
       const payload = {
         prompt: prompt,
@@ -459,48 +182,42 @@ Format your response in clear Markdown with proper headings and formatting.`
       }
 
       const responseText = await callGeminiApi(payload)
-      
-      // Convert Markdown to HTML for display
+
       const markdownToHtml = (md) => {
         return md
-          .replace(/^### (.*$)/gim, '<h3 class="font-semibold text-gray-800 mt-4 mb-2">$1</h3>')
-          .replace(/^## (.*$)/gim, '<h2 class="font-bold text-gray-900 mt-5 mb-3 text-lg">$1</h2>')
-          .replace(/^# (.*$)/gim, '<h1 class="font-bold text-gray-900 mt-6 mb-4 text-xl">$1</h1>')
-          .replace(/^\* (.*$)/gim, '<li class="ml-4">$1</li>')
-          .replace(/^- (.*$)/gim, '<li class="ml-4">$1</li>')
-          .replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>')
-          .replace(/\*(.*?)\*/gim, '<em>$1</em>')
+          .replace(/^### (.*$)/gim, '<h3 class="font-semibold text-slate-800 mt-4 mb-2 flex items-center gap-2">$1</h3>')
+          .replace(/^## (.*$)/gim, '<h2 class="font-bold text-slate-900 mt-5 mb-3 text-lg">$1</h2>')
+          .replace(/^\* (.*$)/gim, '<li class="ml-4 list-disc marker:text-emerald-500">$1</li>')
+          .replace(/^- (.*$)/gim, '<li class="ml-4 list-disc marker:text-emerald-500">$1</li>')
+          .replace(/\*\*(.*?)\*\*/gim, '<strong class="font-semibold text-slate-900">$1</strong>')
+          .replace(/✅/g, '<span class="text-green-600">✅</span>')
+          .replace(/⚠️/g, '<span class="text-amber-600">⚠️</span>')
+          .replace(/❌/g, '<span class="text-red-600">❌</span>')
+          .replace(/₹/g, '<span class="font-medium">₹</span>')
           .replace(/\n\n/gim, '</p><p class="mb-3">')
-          .replace(/^(?!<[h|u|o|l])/gim, '<p class="mb-3">')
-          .replace(/(?<!>)$/gim, '</p>')
-          .replace(/<p class="mb-3"><\/p>/gim, '')
       }
 
       setAnalysisResult(markdownToHtml(responseText))
     } catch (error) {
       setAnalysisError(error.message || 'Failed to analyze tender. Please try again.')
-      console.error('Analysis error:', error)
     } finally {
       setIsAnalyzing(false)
     }
   }
 
-  // Handle Tender Selection
   function handleSelectTender(tender) {
     if (tender.summary) {
       setTenderText(tender.summary)
-      // Scroll to analyzer (optional, can be enhanced)
     }
   }
 
-  // Check Eligibility for All Tenders
   async function handleCheckEligibility() {
     if (tenderFeed.length === 0) {
       setSearchError('No tenders to check. Please search for tenders first.')
       return
     }
 
-    if (!profile.keywords && !profile.annualTurnover && !profile.yearsOfExperience && !profile.certifications) {
+    if (!profile.keywords && !profile.annualTurnover) {
       setSearchError('Please fill in your company profile first.')
       return
     }
@@ -509,51 +226,32 @@ Format your response in clear Markdown with proper headings and formatting.`
     setSearchError('')
 
     try {
-      // Mark all tenders as checking
       setTenderFeed(prev => prev.map(t => ({ ...t, isCheckingEligibility: true, isEligible: undefined })))
 
       const profileText = `
 Company Profile:
 - Keywords: ${profile.keywords || 'Not specified'}
-- Annual Turnover: ${profile.annualTurnover || 'Not specified'}
-- Years of Experience: ${profile.yearsOfExperience || 'Not specified'}
+- Annual Turnover: ₹${profile.annualTurnover || 'Not specified'}
+- Years of Experience: ${profile.yearsOfExperience || 'Not specified'} years
 - Certifications: ${profile.certifications || 'Not specified'}
 `
 
-      // Check eligibility for each tender
       const updatedTenders = await Promise.all(
         tenderFeed.map(async (tender) => {
           try {
-            const prompt = `You are an expert tender analyst. Based on the company profile and tender information, determine if the company is eligible for this tender.
+            const prompt = `Based on the Indian company profile and tender, determine eligibility:
 
 ${profileText}
 
-Tender Information:
-- Title: ${tender.title}
-- Authority: ${tender.authority || 'Not specified'}
-- Summary: ${tender.summary || 'Not specified'}
+Tender: ${tender.title} - ${tender.summary}
 
-Respond with ONLY a JSON object in this exact format:
-{
-  "isEligible": true/false,
-  "reason": "Brief one-sentence explanation"
-}
-
-Be strict - only return true if the company clearly meets the requirements. Return false if there are any doubts or missing requirements.`
+Respond with JSON: { "isEligible": true/false, "reason": "Brief reason in 10 words or less" }`
 
             const payload = {
               prompt: prompt,
               model: 'gemini-2.5-flash-preview-09-2025',
               generationConfig: {
                 responseMimeType: 'application/json',
-                responseSchema: {
-                  type: 'object',
-                  properties: {
-                    isEligible: { type: 'boolean' },
-                    reason: { type: 'string' }
-                  },
-                  required: ['isEligible', 'reason']
-                }
               }
             }
 
@@ -568,7 +266,6 @@ Be strict - only return true if the company clearly meets the requirements. Retu
               isCheckingEligibility: false
             }
           } catch (error) {
-            console.error(`Error checking eligibility for tender: ${tender.title}`, error)
             return {
               ...tender,
               isEligible: false,
@@ -581,222 +278,290 @@ Be strict - only return true if the company clearly meets the requirements. Retu
 
       setTenderFeed(updatedTenders)
     } catch (error) {
-      setSearchError('Failed to check eligibility. Please try again.')
-      console.error('Eligibility check error:', error)
-      // Reset checking status
+      setSearchError('Failed to check eligibility.')
       setTenderFeed(prev => prev.map(t => ({ ...t, isCheckingEligibility: false })))
     } finally {
       setIsCheckingEligibility(false)
     }
   }
 
-  // Export Eligible Tenders to PDF
   function handleExportToPDF() {
     const eligibleTenders = tenderFeed.filter(t => t.isEligible === true)
+    if (eligibleTenders.length === 0) return
 
-    if (eligibleTenders.length === 0) {
-      setSearchError('No eligible tenders found. Please check eligibility first.')
-      return
-    }
+    const doc = new jsPDF()
 
-    try {
-      const doc = new jsPDF()
-      
-      // Title
-      doc.setFontSize(18)
-      doc.setFont('helvetica', 'bold')
-      doc.text('Eligible Tenders Report', 14, 20)
-      
-      // Company Profile Section
-      doc.setFontSize(12)
-      doc.setFont('helvetica', 'bold')
-      doc.text('Company Profile', 14, 35)
-      doc.setFont('helvetica', 'normal')
-      doc.setFontSize(10)
-      let yPos = 42
-      doc.text(`Keywords: ${profile.keywords || 'Not specified'}`, 14, yPos)
-      yPos += 7
-      doc.text(`Annual Turnover: ${profile.annualTurnover || 'Not specified'}`, 14, yPos)
-      yPos += 7
-      doc.text(`Years of Experience: ${profile.yearsOfExperience || 'Not specified'}`, 14, yPos)
-      yPos += 7
-      doc.text(`Certifications: ${profile.certifications || 'Not specified'}`, 14, yPos)
-      
-      // Table data
-      const tableData = eligibleTenders.map((tender, index) => [
-        index + 1,
-        tender.title || 'N/A',
-        tender.authority || 'N/A',
-        tender.url || 'N/A',
-        tender.eligibilityReason || 'N/A'
-      ])
+    // Header
+    doc.setFontSize(22)
+    doc.setTextColor(67, 56, 202)
+    doc.text('TenderHunter.ai', 14, 20)
 
-      // Table
-      doc.autoTable({
-        startY: yPos + 10,
-        head: [['#', 'Title', 'Authority', 'URL', 'Eligibility Reason']],
-        body: tableData,
-        theme: 'striped',
-        headStyles: { fillColor: [66, 139, 202], textColor: 255, fontStyle: 'bold' },
-        styles: { fontSize: 8, cellPadding: 2 },
-        columnStyles: {
-          0: { cellWidth: 15 },
-          1: { cellWidth: 60 },
-          2: { cellWidth: 40 },
-          3: { cellWidth: 50 },
-          4: { cellWidth: 25 }
-        },
-        margin: { left: 14, right: 14 },
-        didDrawPage: function (data) {
-          // Footer
-          doc.setFontSize(8)
-          doc.text(
-            `Page ${data.pageNumber} of ${data.totalPages} - Generated on ${new Date().toLocaleDateString()}`,
-            data.settings.margin.left,
-            doc.internal.pageSize.height - 10
-          )
-        }
-      })
+    doc.setFontSize(12)
+    doc.setTextColor(100)
+    doc.text('Eligible Tenders Report', 14, 28)
+    doc.text(`Generated: ${new Date().toLocaleDateString('en-IN')}`, 14, 35)
 
-      // Generate filename with timestamp
-      const timestamp = new Date().toISOString().split('T')[0]
-      const filename = `Eligible_Tenders_${timestamp}.pdf`
-      
-      // Save PDF
-      doc.save(filename)
-    } catch (error) {
-      setSearchError('Failed to generate PDF. Please try again.')
-      console.error('PDF export error:', error)
-    }
+    const tableData = eligibleTenders.map((tender, index) => [
+      index + 1,
+      tender.title,
+      tender.authority,
+      tender.eligibilityReason
+    ])
+
+    doc.autoTable({
+      startY: 45,
+      head: [['#', 'Tender Title', 'Authority', 'Eligibility Reason']],
+      body: tableData,
+      theme: 'striped',
+      headStyles: { fillColor: [67, 56, 202], textColor: 255 },
+      styles: { fontSize: 9 },
+    })
+
+    doc.save('eligible_tenders_report.pdf')
+  }
+
+  const stats = {
+    total: tenderFeed.length,
+    eligible: tenderFeed.filter(t => t.isEligible === true).length,
+    notEligible: tenderFeed.filter(t => t.isEligible === false).length
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <h1 className="text-2xl font-bold text-gray-900">Smart Tender Dashboard</h1>
-          <p className="text-sm text-gray-600 mt-1">AI-powered tender search and eligibility analysis</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30">
+      {/* Premium Navbar */}
+      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-200/60 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16 items-center">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl blur opacity-50"></div>
+                <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 p-2.5 rounded-xl text-white shadow-lg">
+                  <Target className="w-5 h-5" />
+                </div>
+              </div>
+              <div>
+                <span className="text-xl font-bold text-slate-900 tracking-tight">
+                  TenderHunter<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">.ai</span>
+                </span>
+                <p className="text-[10px] text-slate-500 -mt-0.5">India's Smart Tender Platform</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="hidden sm:flex items-center gap-2 text-xs text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                Live Data
+              </div>
+              <Button variant="ghost" size="icon" className="rounded-full relative">
+                <Bell className="w-5 h-5" />
+                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+              </Button>
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 border-2 border-white ring-2 ring-slate-100 shadow-lg" />
+            </div>
+          </div>
         </div>
-      </header>
+      </nav>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Controls (Sticky) */}
-          <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-8 lg:self-start">
-            <ProfileCard profile={profile} setProfile={setProfile} />
-            <TenderAnalyzer
-              tenderText={tenderText}
-              setTenderText={setTenderText}
-              analysisResult={analysisResult}
-              isAnalyzing={isAnalyzing}
-              analysisError={analysisError}
-              onAnalyze={handleAnalyzeText}
-            />
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+        {/* Hero Section */}
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 p-8 md:p-12 shadow-2xl">
+          {/* Animated background elements */}
+          <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+          <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-cyan-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob animation-delay-4000"></div>
+
+          {/* Grid pattern overlay */}
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMtOS45NDEgMC0xOCA4LjA1OS0xOCAxOHM4LjA1OSAxOCAxOCAxOCAxOC04LjA1OSAxOC0xOC04LjA1OS0xOC0xOC0xOHptMCAzMmMtNy43MzIgMC0xNC02LjI2OC0xNC0xNHM2LjI2OC0xNCAxNC0xNCAxNCA2LjI2OCAxNCAxNC02LjI2OCAxNC0xNCAxNHoiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iLjAyIi8+PC9nPjwvc3ZnPg==')] opacity-30"></div>
+
+          <div className="relative z-10 max-w-3xl">
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full text-sm text-blue-200 mb-6 border border-white/10">
+              <Zap className="w-4 h-4 text-yellow-400" />
+              AI-Powered Tender Intelligence for Indian Businesses
+            </div>
+
+            <h1 className="text-3xl md:text-5xl font-bold text-white mb-4 tracking-tight leading-tight">
+              Find Your Next{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400">
+                Winning Tender
+              </span>
+            </h1>
+            <p className="text-blue-100/80 text-lg mb-8 leading-relaxed max-w-2xl">
+              Search government e-procurement portals, GeM, CPPP, and state tenders.
+              Get AI-powered eligibility analysis tailored to your company profile.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="relative flex-1 group">
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-xl blur opacity-30 group-focus-within:opacity-50 transition duration-300"></div>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <Search className="h-5 w-5 text-slate-400 group-focus-within:text-white transition-colors" />
+                  </div>
+                  <input
+                    type="text"
+                    className="block w-full pl-12 pr-4 py-4 rounded-xl border-0 bg-white/10 backdrop-blur-md text-white placeholder-blue-200/60 focus:ring-2 focus:ring-white/50 focus:bg-white/20 transition-all shadow-inner text-base"
+                    placeholder="Search: IT services, construction, medical equipment..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSearchTenders()}
+                  />
+                </div>
+              </div>
+              <Button
+                size="lg"
+                variant="primary"
+                className="h-auto py-4 px-8 text-base font-semibold shadow-xl shadow-cyan-500/25 bg-gradient-to-r from-cyan-500 to-blue-600 border-none hover:from-cyan-400 hover:to-blue-500 hover:shadow-cyan-500/40 transition-all duration-300"
+                onClick={handleSearchTenders}
+                isLoading={isSearching}
+              >
+                <Search className="w-5 h-5 mr-2" />
+                Find Tenders
+              </Button>
+            </div>
+
+            {searchError && (
+              <p className="mt-4 text-red-300 text-sm bg-red-900/40 backdrop-blur-sm inline-block px-4 py-2 rounded-lg border border-red-500/30">
+                {searchError}
+              </p>
+            )}
+
+            {/* Quick Stats */}
+            {tenderFeed.length > 0 && (
+              <div className="flex flex-wrap gap-4 mt-6 pt-6 border-t border-white/10">
+                <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg">
+                  <Activity className="w-4 h-4 text-cyan-400" />
+                  <span className="text-white font-medium">{stats.total}</span>
+                  <span className="text-blue-200/70 text-sm">Found</span>
+                </div>
+                <div className="flex items-center gap-2 bg-green-500/20 backdrop-blur-sm px-4 py-2 rounded-lg">
+                  <Shield className="w-4 h-4 text-green-400" />
+                  <span className="text-white font-medium">{stats.eligible}</span>
+                  <span className="text-green-200/70 text-sm">Eligible</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Dashboard Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+          {/* Sidebar */}
+          <div className="lg:col-span-4 space-y-6">
+            <div className="lg:sticky lg:top-24 space-y-6">
+              <ProfileCard profile={profile} setProfile={setProfile} />
+              <TenderAnalyzer
+                tenderText={tenderText}
+                setTenderText={setTenderText}
+                analysisResult={analysisResult}
+                isAnalyzing={isAnalyzing}
+                analysisError={analysisError}
+                onAnalyze={handleAnalyzeText}
+              />
+            </div>
           </div>
 
-          {/* Right Column - Results */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Tender Search */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Search className="w-5 h-5 text-blue-600" />
-                <h2 className="text-xl font-semibold text-gray-800">Tender Search</h2>
+          {/* Main Feed */}
+          <div className="lg:col-span-8 space-y-6">
+            <div className="flex flex-wrap items-center justify-between gap-4 bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <TrendingUp className="w-5 h-5 text-blue-600" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold text-slate-800">Latest Opportunities</h2>
+                  <p className="text-xs text-slate-500">Government & PSU Tenders</p>
+                </div>
+                <Badge variant="outline" className="ml-2 bg-slate-50">{tenderFeed.length} Found</Badge>
               </div>
-              <div className="flex gap-3">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSearchTenders()}
-                  placeholder="Search for tenders (e.g., IT services, construction projects)"
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <button
-                  onClick={handleSearchTenders}
-                  disabled={isSearching}
-                  className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors font-medium disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
-                >
-                  {isSearching ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Searching...
-                    </>
-                  ) : (
-                    <>
-                      <Search className="w-4 h-4" />
-                      Find Tenders
-                    </>
-                  )}
-                </button>
-              </div>
-              {searchError && (
-                <div className="mt-4">
-                  <ErrorDisplay error={searchError} />
+
+              {!isSearching && tenderFeed.length > 0 && (
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="gradient"
+                    onClick={handleCheckEligibility}
+                    disabled={isCheckingEligibility}
+                    className="bg-gradient-to-r from-violet-600 to-purple-600 shadow-violet-500/20 hover:shadow-violet-500/40"
+                  >
+                    {isCheckingEligibility ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <Sparkles className="w-4 h-4 mr-2" />
+                    )}
+                    Check Eligibility
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={handleExportToPDF}
+                    disabled={stats.eligible === 0}
+                    className="shadow-sm"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Export ({stats.eligible})
+                  </Button>
                 </div>
               )}
             </div>
 
-            {/* Tender Feed */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold text-gray-800">Tender Feed</h2>
-                {!isSearching && tenderFeed.length > 0 && (
-                  <div className="flex gap-2">
-                    <button
-                      onClick={handleCheckEligibility}
-                      disabled={isCheckingEligibility}
-                      className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition-colors font-medium disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2 text-sm"
-                    >
-                      {isCheckingEligibility ? (
-                        <>
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                          Checking...
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles className="w-4 h-4" />
-                          Check Eligibility
-                        </>
-                      )}
-                    </button>
-                    <button
-                      onClick={handleExportToPDF}
-                      disabled={tenderFeed.filter(t => t.isEligible === true).length === 0}
-                      className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors font-medium disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2 text-sm"
-                    >
-                      <Download className="w-4 h-4" />
-                      Export Eligible ({tenderFeed.filter(t => t.isEligible === true).length})
-                    </button>
-                  </div>
-                )}
-              </div>
-              {isSearching && (
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-                </div>
-              )}
-              {!isSearching && tenderFeed.length === 0 && !searchError && (
-                <div className="text-center py-12 text-gray-500">
-                  <Search className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                  <p>No tenders found. Enter a search query and click "Find Tenders" to start.</p>
-                </div>
-              )}
-              {!isSearching && tenderFeed.length > 0 && (
-                <div className="space-y-4 max-h-[600px] overflow-y-auto">
-                  {tenderFeed.map((tender, index) => (
-                    <TenderCard
-                      key={index}
-                      tender={tender}
-                      onSelectTender={handleSelectTender}
-                    />
+            <div className="space-y-4 min-h-[400px]">
+              {isSearching ? (
+                <div className="space-y-4">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="bg-white h-36 rounded-2xl animate-pulse border border-slate-100 shadow-sm" />
                   ))}
                 </div>
+              ) : tenderFeed.length === 0 ? (
+                <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-200 shadow-sm">
+                  <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <Search className="w-10 h-10 text-blue-500" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-slate-900 mb-2">Search for Tenders</h3>
+                  <p className="text-slate-500 max-w-md mx-auto leading-relaxed">
+                    Enter keywords like "IT services", "road construction", or "medical equipment" to find relevant government tenders.
+                  </p>
+                  <div className="flex flex-wrap justify-center gap-2 mt-6">
+                    {['IT Services', 'Construction', 'Healthcare', 'Education'].map(tag => (
+                      <button
+                        key={tag}
+                        onClick={() => { setSearchQuery(tag); handleSearchTenders(); }}
+                        className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full text-sm transition-colors"
+                      >
+                        {tag}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                tenderFeed.map((tender, index) => (
+                  <TenderCard
+                    key={index}
+                    tender={tender}
+                    onSelectTender={handleSelectTender}
+                  />
+                ))
               )}
             </div>
           </div>
         </div>
       </main>
+
+      {/* Footer */}
+      <footer className="border-t border-slate-200 mt-16 py-8 bg-white/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+            <p className="text-sm text-slate-500">
+              © 2024 TenderHunter.ai — Made for Indian Businesses 🇮🇳
+            </p>
+            <div className="flex items-center gap-4 text-sm text-slate-500">
+              <span>Powered by AI</span>
+              <span>•</span>
+              <span>GeM • CPPP • State Portals</span>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }
-
