@@ -11,7 +11,7 @@ import { TenderCard } from '../components/TenderCard'
 import { ErrorDisplay } from '../components/ErrorDisplay'
 import { Button } from '../components/ui/Button'
 import { Badge } from '../components/ui/Badge'
-import { callGeminiApi, getApiStatus } from '../lib/api'
+import { callSecureAPI, getClientAPIStatus } from '../lib/secure-api'
 
 export default function SmartTenderDashboard() {
   const [profile, setProfile] = useState({
@@ -108,7 +108,7 @@ IMPORTANT:
         }
       }
 
-      const responseText = await callGeminiApi(payload)
+      const responseText = await callSecureAPI(payload)
       const cleanText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
       const jsonData = JSON.parse(cleanText)
 
@@ -181,7 +181,7 @@ Format your response in clear Markdown.`
         }
       }
 
-      const responseText = await callGeminiApi(payload)
+      const responseText = await callSecureAPI(payload)
 
       const markdownToHtml = (md) => {
         return md
@@ -255,7 +255,7 @@ Respond with JSON: { "isEligible": true/false, "reason": "Brief reason in 10 wor
               }
             }
 
-            const responseText = await callGeminiApi(payload)
+            const responseText = await callSecureAPI(payload)
             const cleanText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
             const result = JSON.parse(cleanText)
 
