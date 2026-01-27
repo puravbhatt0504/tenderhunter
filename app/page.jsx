@@ -336,33 +336,45 @@ Respond with JSON: { "isEligible": true/false, "reason": "Brief reason in 10 wor
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30">
       {/* Premium Navbar */}
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-200/60 shadow-sm">
+      <nav className="sticky top-0 z-50 glass-card border-b border-slate-200/60 shadow-sm animate-slide-up">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl blur opacity-50"></div>
-                <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 p-2.5 rounded-xl text-white shadow-lg">
-                  <Target className="w-5 h-5" />
+          <div className="flex justify-between h-16 md:h-18 items-center">
+            {/* Logo */}
+            <div className="flex items-center gap-2 sm:gap-3 animate-fade-in">
+              <div className="relative group">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl blur-md opacity-50 group-hover:opacity-75 transition-opacity"></div>
+                <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 p-2 sm:p-2.5 rounded-xl text-white shadow-lg hover-glow">
+                  <Target className="w-4 h-4 sm:w-5 sm:h-5 animate-pulse-slow" />
                 </div>
               </div>
               <div>
-                <span className="text-xl font-bold text-slate-900 tracking-tight">
-                  TenderHunter<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">.ai</span>
+                <span className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
+                  TenderHunter<span className="text-gradient-blue">.ai</span>
                 </span>
-                <p className="text-[10px] text-slate-500 -mt-0.5">India's Smart Tender Platform</p>
+                <p className="hidden sm:block text-[10px] text-slate-500 -mt-0.5">India's Smart Tender Platform</p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="hidden sm:flex items-center gap-2 text-xs text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full">
+
+            {/* Right Section */}
+            <div className="flex items-center gap-2 sm:gap-3 animate-fade-in animation-delay-200">
+              {/* Live Status Badge */}
+              <div className="hidden md:flex items-center gap-2 text-xs text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full hover:bg-slate-200 transition-colors">
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                Live Data
+                <span className="font-medium">Live Data</span>
               </div>
-              <Button variant="ghost" size="icon" className="rounded-full relative">
-                <Bell className="w-5 h-5" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+
+              {/* Notification Bell */}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full relative hover:bg-slate-100 transition-all hover:scale-110"
+              >
+                <Bell className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
               </Button>
-              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 border-2 border-white ring-2 ring-slate-100 shadow-lg" />
+
+              {/* User Avatar */}
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 border-2 border-white ring-2 ring-slate-100 shadow-lg hover:scale-110 transition-transform cursor-pointer" />
             </div>
           </div>
         </div>
@@ -371,43 +383,49 @@ Respond with JSON: { "isEligible": true/false, "reason": "Brief reason in 10 wor
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
 
         {/* Hero Section */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 p-8 md:p-12 shadow-2xl">
+        <div className="relative overflow-hidden rounded-2xl md:rounded-3xl bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 p-6 sm:p-8 md:p-12 shadow-2xl animate-scale-in">
           {/* Animated background elements */}
-          <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-          <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-cyan-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob animation-delay-4000"></div>
+          <div className="absolute top-0 right-0 -mt-20 -mr-20 w-60 sm:w-80 h-60 sm:h-80 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+          <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-60 sm:w-80 h-60 sm:h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 sm:w-96 h-72 sm:h-96 bg-cyan-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob animation-delay-4000"></div>
 
           {/* Grid pattern overlay */}
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMtOS45NDEgMC0xOCA4LjA1OS0xOCAxOHM4LjA1OSAxOCAxOCAxOCAxOC04LjA1OSAxOC0xOC04LjA1OS0xOC0xOC0xOHptMCAzMmMtNy43MzIgMC0xNC02LjI2OC0xNC0xNHM2LjI2OC0xNCAxNC0xNCAxNCA2LjI2OCAxNCAxNC02LjI2OCAxNC0xNCAxNHoiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iLjAyIi8+PC9nPjwvc3ZnPg==')] opacity-30"></div>
 
           <div className="relative z-10 max-w-3xl">
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full text-sm text-blue-200 mb-6 border border-white/10">
-              <Zap className="w-4 h-4 text-yellow-400" />
-              AI-Powered Tender Intelligence for Indian Businesses
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm text-blue-200 mb-4 sm:mb-6 border border-white/10 animate-fade-in">
+              <Zap className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-400 animate-pulse" />
+              <span className="hidden sm:inline">AI-Powered Tender Intelligence for Indian Businesses</span>
+              <span className="sm:hidden">AI-Powered Tender Search</span>
             </div>
 
-            <h1 className="text-3xl md:text-5xl font-bold text-white mb-4 tracking-tight leading-tight">
+            {/* Heading */}
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-3 sm:mb-4 tracking-tight leading-tight animate-slide-up">
               Find Your Next{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 animate-float">
                 Winning Tender
               </span>
             </h1>
-            <p className="text-blue-100/80 text-lg mb-8 leading-relaxed max-w-2xl">
+
+            {/* Description */}
+            <p className="text-sm sm:text-base md:text-lg text-blue-100/80 mb-6 sm:mb-8 leading-relaxed max-w-2xl animate-slide-up animation-delay-100">
               Search government e-procurement portals, GeM, CPPP, and state tenders.
               Get AI-powered eligibility analysis tailored to your company profile.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-3">
+            {/* Search Bar */}
+            <div className="flex flex-col sm:flex-row gap-3 animate-slide-up animation-delay-200">
               <div className="relative flex-1 group">
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-xl blur opacity-30 group-focus-within:opacity-50 transition duration-300"></div>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <Search className="h-5 w-5 text-slate-400 group-focus-within:text-white transition-colors" />
+                  <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none">
+                    <Search className="h-4 w-4 sm:h-5 sm:w-5 text-slate-400 group-focus-within:text-white transition-colors" />
                   </div>
                   <input
                     type="text"
-                    className="block w-full pl-12 pr-4 py-4 rounded-xl border-0 bg-white/10 backdrop-blur-md text-white placeholder-blue-200/60 focus:ring-2 focus:ring-white/50 focus:bg-white/20 transition-all shadow-inner text-base"
-                    placeholder="Search: IT services, construction, medical equipment..."
+                    className="block w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-3 sm:py-4 rounded-xl border-0 bg-white/10 backdrop-blur-md text-white placeholder-blue-200/60 focus:ring-2 focus:ring-white/50 focus:bg-white/20 transition-all shadow-inner text-sm sm:text-base"
+                    placeholder="Search: IT services, construction..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSearchTenders()}
@@ -417,33 +435,35 @@ Respond with JSON: { "isEligible": true/false, "reason": "Brief reason in 10 wor
               <Button
                 size="lg"
                 variant="primary"
-                className="h-auto py-4 px-8 text-base font-semibold shadow-xl shadow-cyan-500/25 bg-gradient-to-r from-cyan-500 to-blue-600 border-none hover:from-cyan-400 hover:to-blue-500 hover:shadow-cyan-500/40 transition-all duration-300"
+                className="h-auto py-3 sm:py-4 px-6 sm:px-8 text-sm sm:text-base font-semibold shadow-xl shadow-cyan-500/25 bg-gradient-to-r from-cyan-500 to-blue-600 border-none hover:from-cyan-400 hover:to-blue-500 hover:shadow-cyan-500/40 hover:scale-105 transition-all duration-300"
                 onClick={handleSearchTenders}
                 isLoading={isSearching}
               >
-                <Search className="w-5 h-5 mr-2" />
-                Find Tenders
+                <Search className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                <span className="hidden sm:inline">Find Tenders</span>
+                <span className="sm:hidden">Search</span>
               </Button>
             </div>
 
+            {/* Error Message */}
             {searchError && (
-              <p className="mt-4 text-red-300 text-sm bg-red-900/40 backdrop-blur-sm inline-block px-4 py-2 rounded-lg border border-red-500/30">
+              <p className="mt-4 text-xs sm:text-sm text-red-300 bg-red-900/40 backdrop-blur-sm inline-block px-3 sm:px-4 py-2 rounded-lg border border-red-500/30 animate-fade-in">
                 {searchError}
               </p>
             )}
 
             {/* Quick Stats */}
             {tenderFeed.length > 0 && (
-              <div className="flex flex-wrap gap-4 mt-6 pt-6 border-t border-white/10">
-                <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg">
-                  <Activity className="w-4 h-4 text-cyan-400" />
-                  <span className="text-white font-medium">{stats.total}</span>
-                  <span className="text-blue-200/70 text-sm">Found</span>
+              <div className="flex flex-wrap gap-3 sm:gap-4 mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-white/10 animate-fade-in">
+                <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-3 sm:px-4 py-2 rounded-lg hover:bg-white/15 transition-colors">
+                  <Activity className="w-3 h-3 sm:w-4 sm:h-4 text-cyan-400" />
+                  <span className="text-white font-medium text-sm sm:text-base">{stats.total}</span>
+                  <span className="text-blue-200/70 text-xs sm:text-sm">Found</span>
                 </div>
-                <div className="flex items-center gap-2 bg-green-500/20 backdrop-blur-sm px-4 py-2 rounded-lg">
-                  <Shield className="w-4 h-4 text-green-400" />
-                  <span className="text-white font-medium">{stats.eligible}</span>
-                  <span className="text-green-200/70 text-sm">Eligible</span>
+                <div className="flex items-center gap-2 bg-green-500/20 backdrop-blur-sm px-3 sm:px-4 py-2 rounded-lg hover:bg-green-500/30 transition-colors">
+                  <Shield className="w-3 h-3 sm:w-4 sm:h-4 text-green-400" />
+                  <span className="text-white font-medium text-sm sm:text-base">{stats.eligible}</span>
+                  <span className="text-green-200/70 text-xs sm:text-sm">Eligible</span>
                 </div>
               </div>
             )}
@@ -452,6 +472,7 @@ Respond with JSON: { "isEligible": true/false, "reason": "Brief reason in 10 wor
 
         {/* Dashboard Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
 
           {/* Sidebar */}
           <div className="lg:col-span-4 space-y-6">
@@ -554,12 +575,12 @@ Respond with JSON: { "isEligible": true/false, "reason": "Brief reason in 10 wor
                 ))
               )}
             </div>
-          </div>
-        </div>
-      </main>
+          </div >
+        </div >
+      </main >
 
       {/* Footer */}
-      <footer className="border-t border-slate-200 mt-16 py-8 bg-white/50">
+      < footer className="border-t border-slate-200 mt-16 py-8 bg-white/50" >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <p className="text-sm text-slate-500">
@@ -572,7 +593,7 @@ Respond with JSON: { "isEligible": true/false, "reason": "Brief reason in 10 wor
             </div>
           </div>
         </div>
-      </footer>
-    </div>
+      </footer >
+    </div >
   )
 }
