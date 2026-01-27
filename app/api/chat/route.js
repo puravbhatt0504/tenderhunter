@@ -129,7 +129,7 @@ export async function POST(request) {
 
         // 6. Execute API call with timeout
         const genAI = new GoogleGenerativeAI(API_KEY)
-        const modelName = model || 'gemini-2.5-flash-preview-09-2025'
+        const modelName = model || 'gemini-2.5-flash'
         const modelConfig = { model: modelName }
 
         if (tools) {

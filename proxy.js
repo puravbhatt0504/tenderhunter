@@ -91,9 +91,9 @@ function checkRateLimit(ip, isApiRoute) {
 }
 
 // ============================================
-// MIDDLEWARE FUNCTION
+// PROXY FUNCTION (Next.js 16+)
 // ============================================
-export function middleware(request) {
+export function proxy(request) {
     const { pathname } = request.nextUrl
 
     // Skip static assets

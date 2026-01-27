@@ -8,6 +8,7 @@ import 'jspdf-autotable'
 import { ProfileCard } from '../components/ProfileCard'
 import { TenderAnalyzer } from '../components/TenderAnalyzer'
 import { TenderCard } from '../components/TenderCard'
+import { PDFUploader } from '../components/PDFUploader'
 import { ErrorDisplay } from '../components/ErrorDisplay'
 import { Button } from '../components/ui/Button'
 import { Badge } from '../components/ui/Badge'
@@ -82,7 +83,7 @@ IMPORTANT:
 
       const payload = {
         prompt: prompt,
-        model: 'gemini-2.5-flash-preview-09-2025',
+        model: 'gemini-2.5-flash',
         tools: [{ google_search: {} }],
         generationConfig: {
           responseMimeType: 'application/json',
@@ -175,7 +176,7 @@ Format your response in clear Markdown.`
 
       const payload = {
         prompt: prompt,
-        model: 'gemini-2.5-flash-preview-09-2025',
+        model: 'gemini-2.5-flash',
         generationConfig: {
           responseMimeType: 'text/plain'
         }
@@ -209,6 +210,12 @@ Format your response in clear Markdown.`
     if (tender.summary) {
       setTenderText(tender.summary)
     }
+  }
+
+  function handlePDFAnalyzed(analysis) {
+    // Display the PDF analysis result in the analyzer
+    setAnalysisResult(analysis)
+    setAnalysisError('')
   }
 
   async function handleCheckEligibility() {
@@ -249,7 +256,7 @@ Respond with JSON: { "isEligible": true/false, "reason": "Brief reason in 10 wor
 
             const payload = {
               prompt: prompt,
-              model: 'gemini-2.5-flash-preview-09-2025',
+              model: 'gemini-2.5-flash',
               generationConfig: {
                 responseMimeType: 'application/json',
               }
@@ -450,6 +457,10 @@ Respond with JSON: { "isEligible": true/false, "reason": "Brief reason in 10 wor
           <div className="lg:col-span-4 space-y-6">
             <div className="lg:sticky lg:top-24 space-y-6">
               <ProfileCard profile={profile} setProfile={setProfile} />
+              <PDFUploader
+                onPDFAnalyzed={handlePDFAnalyzed}
+                profile={profile}
+              />
               <TenderAnalyzer
                 tenderText={tenderText}
                 setTenderText={setTenderText}
