@@ -71,10 +71,13 @@ export function TenderCard({ tender, onSelectTender }) {
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={(e) => e.stopPropagation()}
-                            className="p-2.5 rounded-xl bg-slate-100 text-slate-500 hover:bg-blue-100 hover:text-blue-600 transition-all duration-200 hover:scale-110 hover:shadow-md magnetic ripple"
-                            title="Open Tender Link"
+                            className="p-2.5 rounded-xl bg-slate-100 text-slate-500 hover:bg-blue-100 hover:text-blue-600 transition-all duration-200 hover:scale-110 hover:shadow-md magnetic ripple group/link"
+                            title="Open tender portal (search for this tender on the portal)"
                         >
                             <ExternalLink className="w-4 h-4" />
+                            <span className="absolute right-0 top-full mt-2 px-2 py-1 bg-slate-900 text-white text-xs rounded opacity-0 group-hover/link:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none">
+                                Opens portal search page
+                            </span>
                         </a>
                     )}
                 </div>

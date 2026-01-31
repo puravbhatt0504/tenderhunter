@@ -55,38 +55,44 @@ export default function SmartTenderDashboard() {
     setTenderFeed([])
 
     try {
-      const prompt = `Act as an expert Indian tender research assistant. Search for current, active government and private tenders in India related to: "${searchQuery}". 
-      
-Focus on:
-- Government e-Procurement portals (GeM, CPPP, state portals)
-- PSU and Central/State Government tenders
-- Current and upcoming bid submissions
+      const prompt = `You have access to Google Search. Use it to find REAL, CURRENT tenders.
 
-Return a JSON object with the following structure:
+TASK: Search the web thoroughly for current, active government and private tenders in India related to: "${searchQuery}".
+
+SEARCH EVERYWHERE - use multiple search queries to find tenders from:
+- GeM (gem.gov.in), CPPP (cppp.gov.in)
+- State e-procurement: Maharashtra, Karnataka, Tamil Nadu, Gujarat, Delhi, UP, Rajasthan, etc.
+- PSUs: ONGC, BHEL, SAIL, Indian Railways, NTPC, etc.
+- Central/State ministries and departments
+- Any Indian tender portal or NIT (Notice Inviting Tender)
+
+REQUIREMENTS:
+1. Return AT LEAST 25 tenders (aim for 25-30). Do not stop at fewer.
+2. Use web search multiple times with different queries (e.g. "${searchQuery} tender India", "GeM ${searchQuery}", "CPPP ${searchQuery}", state names + "${searchQuery} tender", etc.) to gather many results.
+3. Each tender: real title with reference/NIT number, issuing authority, a valid URL to the portal or tender page, and a short summary (value in ₹, deadline if found, key requirements).
+4. URLs must be real portal links (e.g. https://gem.gov.in/search?q=..., https://cppp.gov.in/..., state eproc portals). If you find a specific tender URL from search, use it; otherwise use the portal search URL.
+
+Return ONLY this JSON (no markdown, no other text):
 {
   "tenders": [
     {
-      "title": "Tender title",
-      "authority": "Issuing authority/department name",
-      "url": "Direct link to tender document or details page",
-      "summary": "Brief summary including estimated value if available (in ₹ Crores/Lakhs)"
+      "title": "Exact tender title with NIT/ref number",
+      "authority": "Issuing authority name",
+      "url": "Valid URL to tender or portal search",
+      "summary": "Value in ₹, deadline, key requirements, location"
     }
   ]
 }
 
-IMPORTANT: 
-- Return only valid JSON, no markdown formatting
-- Focus on Indian government and PSU tenders
-- Include estimated tender value in INR where available
-- The "url" must be a direct link to the tender, NOT a search page
-- Include 5-8 relevant active tenders`
+You MUST return at least 25 tenders. Keep searching until you have 25+ unique tenders.`
 
       const payload = {
         prompt: prompt,
         model: 'gemini-2.5-flash',
-        tools: [{ google_search: {} }],
+        useGoogleSearch: true,
         generationConfig: {
           responseMimeType: 'application/json',
+          maxOutputTokens: 16384,
           responseSchema: {
             type: 'object',
             properties: {
@@ -110,17 +116,99 @@ IMPORTANT:
       }
 
       const responseText = await callSecureAPI(payload)
-      const cleanText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
-      const jsonData = JSON.parse(cleanText)
+      
+      // Clean and parse JSON response
+      let cleanText = responseText.trim()
+      // Remove markdown code blocks if present
+      cleanText = cleanText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
+      
+      // Try to extract JSON if wrapped in other text
+      const jsonMatch = cleanText.match(/\{[\s\S]*\}/)
+      if (jsonMatch) {
+        cleanText = jsonMatch[0]
+      }
+      
+      let jsonData
+      try {
+        jsonData = JSON.parse(cleanText)
+      } catch (parseError) {
+        console.error('JSON parse error:', parseError)
+        console.error('Response text:', cleanText)
+        throw new Error('Failed to parse API response. The API may have returned invalid JSON.')
+      }
 
       if (jsonData.tenders && Array.isArray(jsonData.tenders)) {
-        setTenderFeed(jsonData.tenders)
+        if (jsonData.tenders.length === 0) {
+          setSearchError('No tenders found for your search query. Try different keywords.')
+        } else {
+          // Validate and clean URLs - ensure they point to valid portals
+          const cleanedTenders = jsonData.tenders.map(tender => {
+            let url = tender.url || ''
+            
+            // If URL doesn't start with http, try to construct a valid portal URL
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+              // Try to infer portal from authority or use GeM as default
+              const authority = (tender.authority || '').toLowerCase()
+              if (authority.includes('gem') || authority.includes('government e-marketplace')) {
+                url = `https://gem.gov.in/search?q=${encodeURIComponent(searchQuery)}`
+              } else if (authority.includes('cppp') || authority.includes('central public')) {
+                url = `https://cppp.gov.in/cppp/search`
+              } else {
+                url = `https://gem.gov.in/search?q=${encodeURIComponent(searchQuery)}`
+              }
+            }
+            
+            // Validate URL format
+            try {
+              new URL(url) // This will throw if URL is invalid
+            } catch {
+              // If URL is invalid, use GeM search as fallback
+              url = `https://gem.gov.in/search?q=${encodeURIComponent(searchQuery)}`
+            }
+            
+            return {
+              ...tender,
+              url: url
+            }
+          })
+          
+          setTenderFeed(cleanedTenders)
+          
+          // Show info if we got fewer than requested
+          if (cleanedTenders.length < 20) {
+            console.warn(`Only received ${cleanedTenders.length} tenders, requested 20-25`)
+          }
+        }
       } else {
-        throw new Error('Invalid response format from API')
+        console.error('Invalid response structure:', jsonData)
+        throw new Error('Invalid response format from API. Expected "tenders" array.')
       }
     } catch (error) {
-      setSearchError(error.message || 'Failed to search for tenders. Please try again.')
       console.error('Search error:', error)
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      })
+      
+      // Provide more helpful error messages
+      let errorMessage = 'Failed to search for tenders. '
+      
+      if (error.message?.includes('timeout') || error.message?.includes('timed out')) {
+        errorMessage += 'The request took too long. Please try again.'
+      } else if (error.message?.includes('rate limit') || error.message?.includes('429')) {
+        errorMessage += 'Too many requests. Please wait a moment and try again.'
+      } else if (error.message?.includes('API key') || error.message?.includes('authentication')) {
+        errorMessage += 'API configuration error. Please check your API key.'
+      } else if (error.message?.includes('parse') || error.message?.includes('JSON')) {
+        errorMessage += 'Invalid response format. Please try again.'
+      } else if (error.message?.includes('network') || error.message?.includes('fetch')) {
+        errorMessage += 'Network error. Please check your internet connection.'
+      } else {
+        errorMessage += error.message || 'Please try again.'
+      }
+      
+      setSearchError(errorMessage)
     } finally {
       setIsSearching(false)
     }
@@ -506,6 +594,12 @@ Respond with JSON: { "isEligible": true/false, "reason": "Brief reason in 10 wor
                 </div>
                 <Badge variant="outline" className="ml-2 bg-slate-50">{tenderFeed.length} Found</Badge>
               </div>
+              
+              {tenderFeed.length > 0 && (
+                <div className="text-xs text-slate-500 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">
+                  <span className="font-medium text-blue-700">ℹ️</span> Links open tender portal search pages. Search for the tender title on the portal.
+                </div>
+              )}
 
               {!isSearching && tenderFeed.length > 0 && (
                 <div className="flex gap-2">
